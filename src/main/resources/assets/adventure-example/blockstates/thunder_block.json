@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "adventure-example:block/thunder_block"
+    }
+  }
+}

@@ -1,11 +1,14 @@
 package edu.example.adventure;
 
+import edu.example.adventure.blocks.ThunderBlock;
 import edu.example.adventure.items.BoomStick;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.block.Block;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.registry.Registries;
@@ -32,6 +35,7 @@ public class AdventureExample implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Hello Fabric world!");
 
+        registerBlocks();
 		registerItems();
 	}
 
@@ -40,12 +44,31 @@ public class AdventureExample implements ModInitializer {
 
 		BoomStick boomStickEntry = Registry.register(Registries.ITEM,BoomStick.ITEM_KEY, new BoomStick(new Item.Settings().registryKey(BoomStick.ITEM_KEY)));
 
+        Registry.register(
+                Registries.ITEM,
+                ThunderBlock.ITEM_KEY,
+                new BlockItem(
+                        ThunderBlock.ENTRY,
+                        new Item.Settings().registryKey(ThunderBlock.ITEM_KEY)
+                ));
+
 		ItemGroupEvents.modifyEntriesEvent(ITEM_GROUP_KEY).register(
-				e -> e.add(boomStickEntry)
+				e -> {
+                    e.add(boomStickEntry);
+                    e.add(ThunderBlock.ENTRY);
+                }
 		);
 	}
 
-	public static RegistryKey<Item> createItemRegistryKey(Identifier id){
-		return RegistryKey.of(RegistryKeys.ITEM, id);
-	}
+    void registerBlocks(){
+        Registry.register(Registries.BLOCK, ThunderBlock.BLOCK_KEY, ThunderBlock.ENTRY);
+    }
+
+    public static RegistryKey<Item> createItemRegistryKey(Identifier id){
+        return RegistryKey.of(RegistryKeys.ITEM, id);
+    }
+
+    public static RegistryKey<Block> createBlockRegistryKey(Identifier id){
+        return RegistryKey.of(RegistryKeys.BLOCK, id);
+    }
 }
