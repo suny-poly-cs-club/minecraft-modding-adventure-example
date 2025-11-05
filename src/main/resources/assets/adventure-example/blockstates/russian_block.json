@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "adventure-example:block/russian_block"
+    }
+  }
+}
