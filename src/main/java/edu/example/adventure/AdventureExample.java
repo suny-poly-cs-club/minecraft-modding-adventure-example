@@ -1,17 +1,21 @@
 package edu.example.adventure;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import edu.example.adventure.blockentity.RussianBlockEntity;
 import edu.example.adventure.blocks.RussianBlock;
 import edu.example.adventure.blocks.ThunderBlock;
 import edu.example.adventure.items.BoomStick;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -20,8 +24,11 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +55,7 @@ public class AdventureExample implements ModInitializer {
 
         registerBlocks();
 		registerItems();
+        registerCommands();
 	}
 
 	void registerItems(){
@@ -83,6 +91,67 @@ public class AdventureExample implements ModInitializer {
     void registerBlocks(){
         Registry.register(Registries.BLOCK, ThunderBlock.BLOCK_KEY, ThunderBlock.ENTRY);
         Registry.register(Registries.BLOCK, RussianBlock.BLOCK_KEY, RussianBlock.ENTRY);
+    }
+    void registerCommands(){
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            dispatcher.register(CommandManager.literal("first").executes( context -> {
+                context.getSource().sendFeedback(() -> Text.of("FIZRST!!!!"),false);
+                return 1;
+            }));
+
+            dispatcher.register(CommandManager.literal("second")
+                .then(CommandManager.literal("sub1")
+                    .executes( context -> {
+                        context.getSource().sendFeedback(() -> Text.of("222222"),false);
+                        return 1;
+                    })
+                )
+                .then(CommandManager.literal("sub2").executes( context ->{
+                        context.getSource().sendFeedback( ()-> Text.of("Second sub command"),false);
+                        return 1;
+                    })
+                )
+                .executes( context ->{
+                    context.getSource().sendFeedback( ()-> Text.of("Second command no sub command"),false);
+                    return 1;
+                })
+            );
+
+            dispatcher.register(CommandManager.literal("third")
+                .then(CommandManager.argument("value", IntegerArgumentType.integer())
+                    .executes(context -> {
+                        int value = IntegerArgumentType.getInteger(context,"value");
+                        context.getSource().sendFeedback(() -> Text.of("inputted "+value+" into command 3"),false);
+                        return 1;
+                    })
+                )
+            );
+
+            dispatcher.register(CommandManager.literal("diamond").requires((s) -> s.hasPermissionLevel(2))
+                .then(CommandManager.argument("pos",BlockPosArgumentType.blockPos())
+                    .executes(context -> {
+                        BlockPos pos = BlockPosArgumentType.getBlockPos(context,"pos");
+                        World world = context.getSource().getWorld();
+                        world.setBlockState(pos,Blocks.DIAMOND_BLOCK.getDefaultState());
+                        context.getSource().sendFeedback(() -> Text.of("updated block to diaomond "),true);
+                        return 1;
+                    })
+                )
+            );
+
+            dispatcher.register(CommandManager.literal("thunder_block").requires((s) -> s.hasPermissionLevel(2))
+                .then(CommandManager.argument("pos",BlockPosArgumentType.blockPos())
+                    .executes(context -> {
+                        BlockPos pos = BlockPosArgumentType.getBlockPos(context,"pos");
+                        World world = context.getSource().getWorld();
+                        world.setBlockState(pos,ThunderBlock.ENTRY.getDefaultState());
+                        context.getSource().sendFeedback(() -> Text.of("updated block to diaomond "),true);
+                        return 1;
+                    })
+                )
+            );
+
+        });
     }
 
     public static RegistryKey<Item> createItemRegistryKey(Identifier id){
