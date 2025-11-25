@@ -47,6 +47,8 @@ public class ThunderBlock extends Block {
             if(!state.get(USED_PROPERTY)) {
                 EntityType.LIGHTNING_BOLT.spawn(serverWorld, pos.up(), SpawnReason.EVENT);
                 world.setBlockState(pos,state.with(USED_PROPERTY,true));
+            } else {
+                return ActionResult.FAIL;
             }
         }
         return ActionResult.SUCCESS;
