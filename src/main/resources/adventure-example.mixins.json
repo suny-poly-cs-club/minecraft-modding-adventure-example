@@ -5,6 +5,7 @@
   "mixins": [
     "ExampleMixin",
     "FlintAndSteelItemMixin",
+    "MinecraftServerAccessor",
     "MinecraftServervMixin"
   ],
   "injectors": {

@@ -5,6 +5,7 @@ import edu.example.adventure.blockentity.RussianBlockEntity;
 import edu.example.adventure.blocks.RussianBlock;
 import edu.example.adventure.blocks.ThunderBlock;
 import edu.example.adventure.items.BoomStick;
+import edu.example.adventure.mixin.MinecraftServerAccessor;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -24,6 +25,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -150,6 +152,14 @@ public class AdventureExample implements ModInitializer {
                     })
                 )
             );
+
+            dispatcher.register(CommandManager.literal("ass").executes( context -> {
+                MinecraftServer ms = context.getSource().getServer();
+                MinecraftServerAccessor msa = (MinecraftServerAccessor)ms;
+                int ticks = msa.getTicksUntilAutosave();
+                context.getSource().sendFeedback(() -> Text.of("Ticks unit autosave "+ticks),false);
+                return ticks;//return the number of ticks intead of just 1
+            }));
 
         });
     }
